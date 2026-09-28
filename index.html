@@ -27,6 +27,9 @@ button,input,select{font:inherit}
 .ozet .kart .tutar{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;word-break:break-word}
 .kart.gereken{border-top:4px solid var(--turuncu)} .kart.olan{border-top:4px solid var(--mavi)}
 .kart.fark.arti{border-top:4px solid var(--yesil);background:var(--yesilA)} .kart.fark.eksi{border-top:4px solid var(--kirmizi);background:var(--kirmiziA)}
+.kart.fark.notr{border-top:4px solid #aab3c2}
+#farkDurum{font-weight:600;font-size:13px}
+.kart.fark.arti #farkDurum{color:var(--yesil)} .kart.fark.eksi #farkDurum{color:var(--kirmizi)}
 .formul{font-size:12px;color:var(--gri);margin-top:4px}
 
 .gruplar{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-bottom:12px}
@@ -101,10 +104,11 @@ tr.detay td{background:#fbfcfe;text-align:left;padding:6px 10px 10px}
 
 <div class="ozet">
   <div class="kart gereken"><div class="etiket">Olması gereken</div><div class="tutar" id="tGereken">–</div>
-    <div class="formul">geçen seneden kalan + bu sene yapılan + PMU kasası</div></div>
+    <div class="formul">geçen seneden kalan (devirde dükkandaki nakit) + bu sene yapılan + PMU kasası</div></div>
   <div class="kart olan"><div class="etiket">Olan</div><div class="tutar" id="tOlan">–</div>
     <div class="formul">yatırılan − çekilen + kasada + PMU'nun verdiği + bozuk</div></div>
-  <div class="kart fark" id="kFark"><div class="etiket">Fark (olan − olması gereken)</div><div class="tutar" id="tFark">–</div></div>
+  <div class="kart fark" id="kFark"><div class="etiket">Fark (olan − olması gereken)</div><div class="tutar" id="tFark">–</div>
+    <div class="formul" id="farkDurum"></div></div>
 </div>
 
 <div class="gruplar">
@@ -320,7 +324,13 @@ function ciz(){
   document.getElementById("tGereken").textContent = euro(gereken);
   document.getElementById("tOlan").textContent = euro(olan);
   document.getElementById("tFark").textContent = euro(fark);
-  document.getElementById("kFark").className = "kart fark " + (fark >= 0 ? "arti" : "eksi");
+  let farkSinif, farkYazi;
+  if (top.yapilan === 0)            { farkSinif = "notr"; farkYazi = "Bu sene yapılan henüz girilmedi · fark şimdilik anlamlı değil"; }
+  else if (Math.abs(fark) < 0.005)  { farkSinif = "arti"; farkYazi = "Hesap tutuyor ✓"; }
+  else if (fark < 0)                { farkSinif = "eksi"; farkYazi = "Kasa açığı: " + euro(-fark) + " eksik"; }
+  else                              { farkSinif = "arti"; farkYazi = "Kasa fazlası: " + euro(fark) + " fazla"; }
+  document.getElementById("kFark").className = "kart fark " + farkSinif;
+  document.getElementById("farkDurum").textContent = farkYazi;
 
   const cip = t => `<div class="cip ${top[t.k] < 0 ? "eksi" : ""}">${t.ad}<b>${t.isaret < 0 ? "− " : ""}${euro(top[t.k])}</b></div>`;
   document.getElementById("cGereken").innerHTML = TURLER.filter(t => t.grup==="g").map(cip).join("");
@@ -423,12 +433,32 @@ function sil(id){
 }
 function sezonDegis(id){ aktifSezon = id; try { localStorage.setItem(LS_SEZON, id); } catch(e){} acikAylar.clear(); ciz(); }
 function yeniSezon(){
+  const eski = sezonlar().find(s => s.id === aktifSezon);
   const d = new Date(); const y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear()-1;
-  const ad = prompt("Sezon adı:", `${y}-${y+1}`); if (!ad) return;
+  const ad = prompt("Yeni sezonun adı:", `${y}-${y+1}`); if (!ad) return;
   const bas = prompt("Başlangıç ayı (YYYY-AA):", `${y}-09`); if (!bas || !/^\d{4}-\d{2}$/.test(bas)) return;
+
+  // devir: biten sezonun sonunda kasada sayilan nakit (kasada olan + bozuk para)
+  let devir = NaN;
+  if (eski) {
+    const k = sezonKayitlari();
+    const kasa = k.filter(x => x.tur === "kasa").reduce((s,x) => s + x.tutar, 0);
+    const bozuk = k.filter(x => x.tur === "bozuk").reduce((s,x) => s + x.tutar, 0);
+    const oneri = kasa + bozuk;
+    const mesaj = `Yeni sezona devredilecek nakit ("geçen seneden kalan").\n\n` +
+      `${eski.ad} sonunda:\n  Şu an kasada olan: ${euro(kasa)}\n  Bozuk para: ${euro(bozuk)}\n\n` +
+      (oneri === 0 ? `Bu sezonda kasa sayımı girilmemiş. Tutarı elle yaz ya da boş bırak.` : `Tutarı değiştirebilirsin. Boş bırakırsan devir eklenmez.`);
+    const cevap = prompt(mesaj, oneri ? String(Math.round(oneri*100)/100).replace(".", ",") : "");
+    if (cevap === null) return;
+    devir = sayiOku(cevap);
+  }
+
   const s = { id:yeniId(), ad, baslangic:bas, t:simdi(), sil:false };
   veri.sezonlar.push(s); sezonDegis(s.id);
-  alert('Yeni sezon açıldı. "Geçen seneden kalan" tutarını kayıt olarak eklemeyi unutma.');
+  if (isFinite(devir) && devir !== 0)
+    veri.kayitlar.push({ id:yeniId(), sezon:s.id, ay:bas, tur:"gecen", tutar:devir, not:`Devir: ${eski.ad} kasası`, t:simdi(), sil:false });
+  else
+    alert('Yeni sezon açıldı. "Geçen seneden kalan" tutarını kayıt olarak eklemeyi unutma.');
   degisti();
 }
 
