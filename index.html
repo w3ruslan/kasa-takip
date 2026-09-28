@@ -120,6 +120,7 @@ tr.detay td{background:#fbfcfe;text-align:left;padding:6px 10px 10px}
   <h2 id="formBaslik">Yeni kayıt</h2>
   <div class="duzenleme" id="duzenlemeBilgi">Düzenleniyor… <button class="btn kucuk ikincil" onclick="duzenlemeIptal()">İptal</button></div>
   <div class="turlar" id="turlar"></div>
+  <div class="formul" id="turAcik" style="margin:-4px 0 10px"></div>
   <div class="satir">
     <input id="fTutar" inputmode="decimal" placeholder="Tutar (örn. 1 020,50)" autocomplete="off">
     <input id="fAy" type="month">
@@ -162,14 +163,14 @@ const WORKER_URL = "https://kasa-data.w3ruslan-8c5.workers.dev";
 const LS_VERI = "kasaVeri", LS_BEKLE = "kasaBekliyor", LS_PIN = "kasaPin", LS_SEZON = "kasaSezon";
 
 const TURLER = [
-  { k:"gecen",     ad:"Geçen seneden kalan",  grup:"g", isaret:+1 },
-  { k:"yapilan",   ad:"Bu sene yapılan",      grup:"g", isaret:+1 },
-  { k:"pmu",       ad:"PMU kasası",           grup:"g", isaret:+1 },
-  { k:"yatirilan", ad:"Bankaya yatırılan",    grup:"o", isaret:+1 },
-  { k:"cekilen",   ad:"Bankadan çekilen",     grup:"o", isaret:-1 },
-  { k:"kasa",      ad:"Şu an kasada olan",    grup:"o", isaret:+1 },
-  { k:"pmuVerdi",  ad:"PMU'nun bize verdiği", grup:"o", isaret:+1 },
-  { k:"bozuk",     ad:"Bozuk para",           grup:"o", isaret:+1 },
+  { k:"gecen",     ad:"Geçen seneden kalan",  grup:"g", isaret:+1, acik:"Devir başladığında dükkandaki nakit." },
+  { k:"yapilan",   ad:"Bu sene yapılan",      grup:"g", isaret:+1, acik:"Bu sezon yapılan." },
+  { k:"pmu",       ad:"PMU kasası",           grup:"g", isaret:+1, acik:"PMU emri gelince (PMU kasası ~1.200 € üstü) pro hesaptan PMU'ya virement yapılır; aynı tutarda nakit PMU kasasından alınıp genel kasaya konur. Buraya o tutarı yaz. Virement'ı ayrıca \"bankadan çekilen\" olarak yazma." },
+  { k:"yatirilan", ad:"Bankaya yatırılan",    grup:"o", isaret:+1, acik:"Bankaya yatırılan nakit." },
+  { k:"cekilen",   ad:"Bankadan çekilen",     grup:"o", isaret:-1, acik:"Bankadan çekilen nakit." },
+  { k:"kasa",      ad:"Şu an kasada olan",    grup:"o", isaret:+1, acik:"Sayım anında genel kasadaki nakit. Sezon kapanınca yeni sezona devir olarak geçer." },
+  { k:"pmuVerdi",  ad:"PMU'nun bize verdiği", grup:"o", isaret:+1, acik:"PMU'nun bize verdiği para." },
+  { k:"bozuk",     ad:"Bozuk para",           grup:"o", isaret:+1, acik:"Sayım anındaki bozuk para. Sezon kapanınca devre eklenir." },
 ];
 const TUR = Object.fromEntries(TURLER.map(t => [t.k, t]));
 const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -341,6 +342,7 @@ function ciz(){
   document.getElementById("turlar").innerHTML =
     `<div class="ayrac">Olması gereken</div>` + TURLER.filter(t=>t.grup==="g").map(tb).join("") +
     `<div class="ayrac">Olan</div>` + TURLER.filter(t=>t.grup==="o").map(tb).join("");
+  document.getElementById("turAcik").textContent = TUR[seciliTur].acik;
 
   tabloCiz(kay, top);
 }
