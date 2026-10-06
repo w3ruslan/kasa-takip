@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f4f5f8">
-<title>Kasa</title>
+<title>Caisse</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -101,7 +101,7 @@ button,input,select{font:inherit;color:inherit}
 .hata{color:var(--kir);font-size:13px;min-height:18px;margin-top:6px}
 .pin input{text-align:center;letter-spacing:.3em;font-size:24px}
 
-/* kasa sayimi */
+/* comptage de caisse */
 .sayim{max-width:400px;max-height:92vh;overflow-y:auto;padding:18px 18px 16px}
 .sayim h4{margin:14px 0 6px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--gri)}
 .sayim .serbest{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
@@ -133,7 +133,7 @@ button,input,select{font:inherit;color:inherit}
 <div class="sayfa">
 
 <div class="ust">
-  <h1>Kasa</h1>
+  <h1>Caisse</h1>
   <select id="sezonSec" onchange="sezonDegis(this.value)"></select>
   <div class="durum"><span class="nokta" id="nokta"></span><span id="durumYazi">…</span></div>
 </div>
@@ -144,67 +144,67 @@ button,input,select{font:inherit;color:inherit}
   <div class="kart o" id="kartO"></div>
 </div>
 
-<div class="bolum"><h2>Aylık hareketler</h2><button class="btn ince" onclick="yeniAc('yatirilan', buAy())">+ Hareket ekle</button></div>
+<div class="bolum"><h2>Mouvements mensuels</h2><button class="btn ince" onclick="yeniAc('yatirilan', buAy())">+ Ajouter un mouvement</button></div>
 <div class="aylar" id="aylar"></div>
 
 <div class="araclar">
-  <button onclick="csvIndir()">Excel'e aktar</button>
-  <button onclick="yedekIndir()">Yedek indir</button>
-  <button onclick="document.getElementById('dosya').click()">Yedekten yükle</button>
-  <button onclick="yeniSezon()">Yeni sezon</button>
-  <button onclick="senkron()">Senkronize et</button>
-  <button onclick="pinUnut()">PIN'i unut</button>
+  <button onclick="csvIndir()">Exporter vers Excel</button>
+  <button onclick="yedekIndir()">Télécharger une sauvegarde</button>
+  <button onclick="document.getElementById('dosya').click()">Restaurer une sauvegarde</button>
+  <button onclick="yeniSezon()">Nouvelle saison</button>
+  <button onclick="senkron()">Synchroniser</button>
+  <button onclick="pinUnut()">Oublier le PIN</button>
   <input type="file" id="dosya" accept=".json,application/json" style="display:none" onchange="yedekYukle(this)">
 </div>
-<div class="dipnot">Bir rakama ya da etikete dokun: düzenle. Her değişiklik bu cihaza ve buluta kaydedilir; internet yoksa bekler.</div>
+<div class="dipnot">Touchez un montant ou une étiquette pour le modifier. Chaque modification est enregistrée sur cet appareil et dans le cloud ; sans internet, elle est mise en attente.</div>
 </div>
 
 <div class="perde" id="duzPerde" onclick="if(event.target===this)kapat()">
   <div class="pencere">
     <h3 id="duzBaslik"></h3>
     <div class="aciklama" id="duzAciklama"></div>
-    <div id="turAlan"><label>Tür</label><select id="duzTur"></select></div>
-    <label>Tutar</label>
+    <div id="turAlan"><label>Type</label><select id="duzTur"></select></div>
+    <label>Montant</label>
     <input id="duzTutar" inputmode="decimal" autocomplete="off" onkeydown="if(event.key==='Enter')duzKaydet()">
     <div id="tarihAlan"><div class="ikiAlan">
-      <div><label>Ay</label><input id="duzAy" type="month"></div>
-      <div><label>Gün</label><input id="duzGun" inputmode="numeric" placeholder="–" onkeydown="if(event.key==='Enter')duzKaydet()"></div>
+      <div><label>Mois</label><input id="duzAy" type="month"></div>
+      <div><label>Jour</label><input id="duzGun" inputmode="numeric" placeholder="–" onkeydown="if(event.key==='Enter')duzKaydet()"></div>
     </div></div>
     <div class="hata" id="duzHata"></div>
     <div class="dugmeler">
-      <button class="btn sil" id="duzSil" onclick="duzSil()">Sil</button>
-      <button class="btn ince" onclick="kapat()">İptal</button>
-      <button class="btn" onclick="duzKaydet()">Kaydet</button>
+      <button class="btn sil" id="duzSil" onclick="duzSil()">Supprimer</button>
+      <button class="btn ince" onclick="kapat()">Annuler</button>
+      <button class="btn" onclick="duzKaydet()">Enregistrer</button>
     </div>
   </div>
 </div>
 
 <div class="perde" id="sayimPerde" onclick="if(event.target===this)sayimKapat()">
   <div class="pencere sayim">
-    <h3>Şu an kasada olan</h3>
-    <div class="aciklama">Kasayı say: serbest tutar + banknotlar + bozuk para ruloları</div>
-    <h4>Serbest tutar</h4>
+    <h3>En caisse actuellement</h3>
+    <div class="aciklama">Comptez la caisse : montant libre + billets + rouleaux de pièces</div>
+    <h4>Montant libre</h4>
     <div class="serbest"><input id="sy_serbest" inputmode="decimal" placeholder="0" autocomplete="off" oninput="sayimHesapla()"><span>€</span></div>
-    <h4>Banknotlar · adet</h4>
+    <h4>Billets · nombre</h4>
     <div id="sy_banknot"></div>
-    <h4>Bozuk para ruloları · rulo adedi</h4>
+    <h4>Rouleaux de pièces · nombre de rouleaux</h4>
     <div id="sy_rulo"></div>
-    <div class="toplamKutu"><span>Toplam</span><b id="sy_toplam">0,00 €</b></div>
+    <div class="toplamKutu"><span>Total</span><b id="sy_toplam">0,00 €</b></div>
     <div class="hata" id="sy_hata"></div>
     <div class="dugmeler">
-      <button class="btn sil" id="sy_sil" onclick="sayimSil()">Sil</button>
-      <button class="btn ince" onclick="sayimKapat()">İptal</button>
-      <button class="btn" onclick="sayimKaydet()">Kaydet</button>
+      <button class="btn sil" id="sy_sil" onclick="sayimSil()">Supprimer</button>
+      <button class="btn ince" onclick="sayimKapat()">Annuler</button>
+      <button class="btn" onclick="sayimKaydet()">Enregistrer</button>
     </div>
   </div>
 </div>
 
 <div class="perde" id="pinPerde">
   <div class="pencere pin" style="text-align:center">
-    <h3>PIN kodu</h3>
+    <h3>Code PIN</h3>
     <input id="pinGiris" type="password" inputmode="numeric" autocomplete="off" style="margin-top:12px" onkeydown="if(event.key==='Enter')pinGonder()">
     <div class="hata" id="pinHata"></div>
-    <div class="dugmeler"><button class="btn" onclick="pinGonder()">Giriş</button></div>
+    <div class="dugmeler"><button class="btn" onclick="pinGonder()">Entrer</button></div>
   </div>
 </div>
 
@@ -217,20 +217,19 @@ const LS_VERI = "kasaVeri", LS_BEKLE = "kasaBekliyor", LS_PIN = "kasaPin", LS_SE
 
 // tek: son yazilan gecerli, toplanmaz. liste: aylara gore birikir
 const T = {
-  gecen:     { ad:"Geçen seneden kalan",  tek:true,  acik:"Sene başında dükkandaki nakit" },
-  yapilan:   { ad:"Bu sene yapılan",      tek:true,  acik:"Güncel toplam — yenisi eskisinin yerine geçer" },
-  pmu:       { ad:"PMU kasası",           tek:false, acik:"PMU emriyle virement → PMU kasasından genel kasaya alınan nakit" },
-  yatirilan: { ad:"Bankaya yatırılan",    tek:false, acik:"Kasadan bankaya giden nakit" },
-  cekilen:   { ad:"Bankadan çekilen",     tek:false, acik:"Bankadan çekilen bozuk para" },
-  kasa:      { ad:"Şu an kasada olan",    tek:true,  acik:"Sayımda bulunan nakit — yenisi eskisinin yerine geçer" },
-  pmuVerdi:  { ad:"PMU'nun bize verdiği", tek:false, acik:"PMU virement yapınca genel kasadan PMU kasasına konan nakit" },
-  bozuk:     { ad:"Bozuk para",           tek:true,  acik:"Sayımdaki bozuk para — yenisi eskisinin yerine geçer" },
+  gecen:     { ad:"Reste de l'an dernier",   tek:true,  acik:"Espèces en caisse au début de l'année" },
+  yapilan:   { ad:"Réalisé cette année",     tek:true,  acik:"Total à jour — la nouvelle valeur remplace l'ancienne" },
+  pmu:       { ad:"Caisse PMU",              tek:false, acik:"Sur ordre du PMU (virement) : espèces prises dans la caisse PMU et mises dans la caisse générale" },
+  yatirilan: { ad:"Déposé en banque",        tek:false, acik:"Espèces de la caisse déposées à la banque" },
+  cekilen:   { ad:"Retiré de la banque",     tek:false, acik:"Monnaie retirée à la banque" },
+  kasa:      { ad:"En caisse actuellement",  tek:true,  acik:"Montant compté — la nouvelle valeur remplace l'ancienne" },
+  pmuVerdi:  { ad:"Versé par le PMU",        tek:false, acik:"Virement du PMU : espèces prises dans la caisse générale et mises dans la caisse PMU" },
 };
 const GEREKEN = [["","gecen"],["+","yapilan"],["+","pmu"]];
-const OLAN    = [["","yatirilan"],["−","cekilen"],["+","kasa"],["+","pmuVerdi"],["+","bozuk"]];
+const OLAN    = [["","yatirilan"],["−","cekilen"],["+","kasa"],["+","pmuVerdi"]];
 const LISTE   = ["pmu","yatirilan","cekilen","pmuVerdi"];
-const AYLAR = ["ocak","şubat","mart","nisan","mayıs","haziran","temmuz","ağustos","eylül","ekim","kasım","aralık"];
-const AYK = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+const AYLAR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const AYK = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 
 // ============================================================================
 //  VERI
@@ -266,7 +265,7 @@ function ayni(a, b){
 // eski surum: tek-degerli turlerde birden cok kayit varsa sezon basina tek kayda topla
 function duzenleVeri(){
   let degisti = false;
-  for (const s of veri.sezonlar) for (const tur of ["gecen","yapilan","kasa","bozuk"]) {
+  for (const s of veri.sezonlar) for (const tur of ["gecen","yapilan","kasa"]) {
     const sabitId = s.id + ":" + tur;
     const eski = veri.kayitlar.filter(k => !k.sil && k.sezon === s.id && k.tur === tur && k.id !== sabitId);
     if (!eski.length) continue;
@@ -293,33 +292,33 @@ function saat(){ return new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",mi
 async function uzakOku(){
   const r = await fetch(WORKER_URL + "?t=" + Date.now(), { cache:"no-store", headers:{ "X-Pin": pinAl() } });
   if (r.status === 401) { const e = new Error("pin"); e.pin = true; throw e; }
-  if (!r.ok) throw new Error("okuma " + r.status);
+  if (!r.ok) throw new Error("lecture " + r.status);
   const d = await r.json();
   return (d && Array.isArray(d.kayitlar)) ? d : bosVeri();
 }
 async function uzakYaz(d){
   const r = await fetch(WORKER_URL, { method:"POST", headers:{ "Content-Type":"application/json", "X-Pin": pinAl() }, body: JSON.stringify(d) });
   if (r.status === 401) { const e = new Error("pin"); e.pin = true; throw e; }
-  if (!r.ok) throw new Error("yazma " + r.status);
+  if (!r.ok) throw new Error("ecriture " + r.status);
 }
 let senkronda = false, tekrar = false, zamanlayici = null;
 async function senkron(){
   if (!pinAl()) { pinSor(); return; }
   if (senkronda) { tekrar = true; return; }
-  senkronda = true; durum("bekle", "Senkronize ediliyor…");
+  senkronda = true; durum("bekle", "Synchronisation…");
   try {
     const uzak = await uzakOku();
     veri = birlestir(veri, uzak); duzenleVeri();
     if (!ayni(veri, uzak)) await uzakYaz(veri);
     yerelKaydet(); bekliyor(false);
-    durum("ok", "Senkronize · " + saat()); ciz();
+    durum("ok", "Synchronisé · " + saat()); ciz();
   } catch (e) {
-    if (e.pin) { try { localStorage.removeItem(LS_PIN); } catch(_){} pinSor("PIN yanlış"); durum("hata", "PIN gerekli"); }
-    else durum("hata", bekliyorMu() ? "Çevrimdışı · değişiklikler bu cihazda bekliyor" : "Bağlantı yok · bu cihazdaki veri gösteriliyor");
+    if (e.pin) { try { localStorage.removeItem(LS_PIN); } catch(_){} pinSor("PIN incorrect"); durum("hata", "PIN requis"); }
+    else durum("hata", bekliyorMu() ? "Hors ligne · modifications en attente sur cet appareil" : "Pas de connexion · données de cet appareil affichées");
   } finally { senkronda = false; if (tekrar) { tekrar = false; senkron(); } }
 }
 function degisti(){
-  yerelKaydet(); bekliyor(true); ciz(); durum("bekle", "Kaydediliyor…");
+  yerelKaydet(); bekliyor(true); ciz(); durum("bekle", "Enregistrement…");
   clearTimeout(zamanlayici); zamanlayici = setTimeout(senkron, 700);
 }
 setInterval(() => { if (bekliyorMu() && !senkronda) senkron(); }, 30000);
@@ -338,7 +337,7 @@ function pinGonder(){
   senkron();
 }
 function pinUnut(){
-  if (!confirm("Bu cihazda PIN silinsin mi? Tekrar girmen gerekecek.")) return;
+  if (!confirm("Supprimer le PIN sur cet appareil ? Il faudra le saisir à nouveau.")) return;
   try { localStorage.removeItem(LS_PIN); } catch(e){} pinSor();
 }
 
@@ -376,10 +375,10 @@ function ciz(){
   const ss = sezonlar();
   if (ss.length && !ss.find(s => s.id === aktifSezon)) aktifSezon = ss[ss.length-1].id;
   document.getElementById("sezonSec").innerHTML = ss.length
-    ? ss.map(s => `<option value="${s.id}" ${s.id===aktifSezon?"selected":""}>Sezon ${kacis(s.ad)}</option>`).join("")
-    : `<option>Sezon yok</option>`;
+    ? ss.map(s => `<option value="${s.id}" ${s.id===aktifSezon?"selected":""}>Saison ${kacis(s.ad)}</option>`).join("")
+    : `<option>Aucune saison</option>`;
   if (!ss.length) {
-    document.getElementById("sonuc").innerHTML = `<div class="sol">Henüz sezon yok. Aşağıdan "Yeni sezon"a bas.</div>`;
+    document.getElementById("sonuc").innerHTML = `<div class="sol">Aucune saison. Appuyez sur « Nouvelle saison » en bas.</div>`;
     document.getElementById("kartG").innerHTML = document.getElementById("kartO").innerHTML = document.getElementById("aylar").innerHTML = "";
     return;
   }
@@ -389,45 +388,45 @@ function ciz(){
   const fark = olan - gereken;
 
   let sinif, kelime;
-  if (Math.abs(fark) < 0.005) { sinif = "tamam"; kelime = "TAMAM ✓"; }
-  else if (fark < 0) { sinif = "eksik"; kelime = "EKSİK"; }
-  else { sinif = "fazla"; kelime = "FAZLA"; }
+  if (Math.abs(fark) < 0.005) { sinif = "tamam"; kelime = "OK ✓"; }
+  else if (fark < 0) { sinif = "eksik"; kelime = "MANQUE"; }
+  else { sinif = "fazla"; kelime = "EXCÉDENT"; }
   const s = document.getElementById("sonuc");
   s.className = "sonuc " + sinif;
   s.innerHTML = `
-    <div class="sol"><div class="etk">Kasa durumu</div>
+    <div class="sol"><div class="etk">État de la caisse</div>
       <div class="buyuk"><span class="tutar r">${euro(Math.abs(fark))}</span><span class="rozet">${kelime}</span></div></div>
     <div class="denklem r">
-      <div class="p">Olan<b>${euro(olan)}</b></div><span class="op">−</span>
-      <div class="p">Olması gereken<b>${euro(gereken)}</b></div><span class="op">=</span>
-      <div class="p">Fark<b style="color:${fark<-0.005?"var(--kir)":"var(--yes)"}">${fark>0.005?"+":""}${euro(fark)}</b></div>
+      <div class="p">Réel<b>${euro(olan)}</b></div><span class="op">−</span>
+      <div class="p">Théorique<b>${euro(gereken)}</b></div><span class="op">=</span>
+      <div class="p">Écart<b style="color:${fark<-0.005?"var(--kir)":"var(--yes)"}">${fark>0.005?"+":""}${euro(fark)}</b></div>
     </div>`;
 
   const kalem = (op, tur) => {
     const d = T[tur], v = deger(tur);
     let alt;
-    if (d.tek) { const k = tekKayit(tur); alt = k ? "Güncellendi " + kisaTarih(k.tarih) : "Girilmedi — dokun"; }
-    else { const l = liste(tur); alt = l.length ? l.length + " hareket" : "Hareket yok"; }
+    if (d.tek) { const k = tekKayit(tur); alt = k ? "Mis à jour le " + kisaTarih(k.tarih) : "Non saisi — touchez"; }
+    else { const l = liste(tur); alt = l.length ? l.length + (l.length > 1 ? " mouvements" : " mouvement") : "Aucun mouvement"; }
     const tik = d.tek ? `tekAc('${tur}')` : `yeniAc('${tur}', buAy())`;
     const bos = d.tek && !tekKayit(tur);
     return `<div class="kalem ${bos?"bos":""}" onclick="${tik}" title="${kacis(d.acik)}">
       <span class="op">${op}</span><span class="ad">${d.ad}</span><span class="d r">${euro(v)}</span>
-      <span class="alt">${alt}</span><span class="ek">${d.tek ? "" : "+ ekle"}</span></div>`;
+      <span class="alt">${alt}</span><span class="ek">${d.tek ? "" : "+ ajouter"}</span></div>`;
   };
-  document.getElementById("kartG").innerHTML = `<h2>Olması gereken</h2>` +
+  document.getElementById("kartG").innerHTML = `<h2>Théorique (ce qui devrait être là)</h2>` +
     GEREKEN.map(([op,k]) => kalem(op,k)).join("") +
-    `<div class="cizgi"></div><div class="toplamSat"><span>= Toplam</span><b class="r">${euro(gereken)}</b></div>`;
-  document.getElementById("kartO").innerHTML = `<h2>Olan</h2>` +
+    `<div class="cizgi"></div><div class="toplamSat"><span>= Total</span><b class="r">${euro(gereken)}</b></div>`;
+  document.getElementById("kartO").innerHTML = `<h2>Réel (ce qui est là)</h2>` +
     OLAN.map(([op,k]) => kalem(op,k)).join("") +
-    `<div class="cizgi"></div><div class="toplamSat"><span>= Toplam</span><b class="r">${euro(olan)}</b></div>`;
+    `<div class="cizgi"></div><div class="toplamSat"><span>= Total</span><b class="r">${euro(olan)}</b></div>`;
 
-  // aylar: en yeni ay ustte
+  // mois : le plus récent en haut
   const sz = ss.find(x => x.id === aktifSezon);
   const kay = kayitlar();
   let son = buAy(); for (const k of kay) { const a = kayitAy(k); if (a > son) son = a; }
   let ilk = sz.baslangic; for (const k of kay) { const a = kayitAy(k); if (a && a < ilk) ilk = a; }
   const aylar = []; for (let a = ilk; a <= son; a = aySonraki(a)) aylar.push(a);
-  let h = `<div class="ayS bas"><div>Ay</div>${LISTE.map(t => `<div>${T[t].ad}</div>`).join("")}</div>`;
+  let h = `<div class="ayS bas"><div>Mois</div>${LISTE.map(t => `<div>${T[t].ad}</div>`).join("")}</div>`;
   for (const a of aylar.reverse()) {
     h += `<div class="ayS"><div class="ayAd">${ayYazi(a)}</div>`;
     for (const t of LISTE) {
@@ -435,7 +434,7 @@ function ciz(){
                    .sort((x,y) => (x.tarih||"") < (y.tarih||"") ? -1 : (x.tarih||"") > (y.tarih||"") ? 1 : (x.t||0)-(y.t||0));
       h += `<div class="hc ${l.length?"":"bosH"}" onclick="yeniAc('${t}','${a}')">` +
         (l.length ? `<span class="etkMobil">${T[t].ad}</span>` : "") +
-        l.map(k => `<span class="cip r ${t}" onclick="event.stopPropagation();kayitAc('${k.id}')">${k.tarih ? `<i>${Number(k.tarih.slice(8))}</i>` : ""}${euroK(k.tutar)}</span>`).join("") +
+        l.map(k => `<span class="cip r ${t}" onclick="event.stopPropagation();kayitAc('${k.id}')">${k.tarih ? `<i>${Number(k.tarih.slice(8))})</i>` : ""}${euroK(k.tutar)}</span>`).join("") +
         `<span class="arti">+</span></div>`;
     }
     h += `</div>`;
@@ -464,43 +463,43 @@ function ac({ baslik, aciklama, tutar="", ay="", gun="", tarihGoster=false, turG
   setTimeout(() => { const i = document.getElementById("duzTutar"); i.focus(); i.select(); }, 50);
 }
 function kapat(){ document.getElementById("duzPerde").classList.remove("acik"); aktif = null; }
-function sezonVarMi(){ if (sezonlar().length) return true; alert('Önce bir sezon başlat ("Yeni sezon").'); return false; }
+function sezonVarMi(){ if (sezonlar().length) return true; alert("Créez d'abord une saison (« Nouvelle saison »)."); return false; }
 function tekAc(tur){
   if (!sezonVarMi()) return;
   if (tur === "kasa") return sayimAc();
   const k = tekKayit(tur); aktif = { mod:"tek", tur };
-  ac({ baslik:T[tur].ad, aciklama:T[tur].acik + (k ? " · son güncelleme " + kisaTarih(k.tarih) : ""), tutar:k ? sayiYaz(k.tutar) : "", silGoster:!!k });
+  ac({ baslik:T[tur].ad, aciklama:T[tur].acik + (k ? " · dernière mise à jour le " + kisaTarih(k.tarih) : ""), tutar:k ? sayiYaz(k.tutar) : "", silGoster:!!k });
 }
 function yeniAc(tur, ay){
   if (!sezonVarMi()) return;
   aktif = { mod:"yeni" };
-  ac({ baslik:"Yeni hareket", aciklama:T[tur].acik, ay, gun: ay === buAy() ? String(new Date().getDate()) : "", tarihGoster:true, turGoster:true, tur });
+  ac({ baslik:"Nouveau mouvement", aciklama:T[tur].acik, ay, gun: ay === buAy() ? String(new Date().getDate()) : "", tarihGoster:true, turGoster:true, tur });
 }
 function kayitAc(id){
-  const k = veri.kayitlar.find(x => x.id === id); if (!k) return;
+  const k = veri.kayitlar.find(x => x.id === id); if (!k || !T[k.tur]) return;
   aktif = { mod:"kayit", id };
-  ac({ baslik:"Hareketi düzenle", aciklama:T[k.tur].acik, tutar:sayiYaz(k.tutar), ay:kayitAy(k), gun:k.tarih ? String(Number(k.tarih.slice(8))) : "", tarihGoster:true, turGoster:true, tur:k.tur, silGoster:true });
+  ac({ baslik:"Modifier le mouvement", aciklama:T[k.tur].acik, tutar:sayiYaz(k.tutar), ay:kayitAy(k), gun:k.tarih ? String(Number(k.tarih.slice(8))) : "", tarihGoster:true, turGoster:true, tur:k.tur, silGoster:true });
 }
 function duzKaydet(){
   if (!aktif) return;
   const hata = m => { document.getElementById("duzHata").textContent = m; };
   const v = sayiOku(document.getElementById("duzTutar").value);
-  if (!isFinite(v)) return hata("Geçerli bir tutar yaz. Örnek: 1 050 ya da 388 288,69");
+  if (!isFinite(v)) return hata("Saisissez un montant valide. Ex. : 1 050 ou 388 288,69");
   if (aktif.mod === "tek") {
     const id = aktifSezon + ":" + aktif.tur;
     veri.kayitlar = veri.kayitlar.filter(k => k.id !== id);
     veri.kayitlar.push({ id, sezon:aktifSezon, tur:aktif.tur, tutar:v, tarih:bugun(), t:simdi(), sil:false });
     kapat(); degisti(); return;
   }
-  if (v === 0) return hata("Tutar 0 olamaz. Silmek için Sil'e bas.");
+  if (v === 0) return hata("Le montant ne peut pas être 0. Pour supprimer, appuyez sur Supprimer.");
   const tur = document.getElementById("duzTur").value;
   const ay = document.getElementById("duzAy").value;
-  if (!/^\d{4}-\d{2}$/.test(ay)) return hata("Ay seç.");
+  if (!/^\d{4}-\d{2}$/.test(ay)) return hata("Choisissez un mois.");
   let tarih = null;
   const g = document.getElementById("duzGun").value.trim();
   if (g) {
     const d = Number(g), [y,m] = ay.split("-").map(Number), maks = new Date(y, m, 0).getDate();
-    if (!Number.isInteger(d) || d < 1 || d > maks) return hata(`Gün 1 ile ${maks} arasında olmalı.`);
+    if (!Number.isInteger(d) || d < 1 || d > maks) return hata(`Le jour doit être entre 1 et ${maks}.`);
     tarih = ay + "-" + String(d).padStart(2,"0");
   }
   if (aktif.mod === "yeni") veri.kayitlar.push({ id:yeniId(), sezon:aktifSezon, tur, tutar:v, ay, tarih, t:simdi(), sil:false });
@@ -511,24 +510,24 @@ function duzSil(){
   if (!aktif) return;
   const id = aktif.mod === "tek" ? aktifSezon + ":" + aktif.tur : aktif.id;
   const k = veri.kayitlar.find(x => x.id === id); if (!k) return;
-  if (!confirm(`${T[k.tur].ad} · ${euro(k.tutar)}\n\nSilinsin mi?`)) return;
+  if (!confirm(`${T[k.tur] ? T[k.tur].ad : k.tur} · ${euro(k.tutar)}\n\nSupprimer ?`)) return;
   k.sil = true; k.t = simdi(); kapat(); degisti();
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") { kapat(); sayimKapat(); } });
 
 // ============================================================================
-//  KASA SAYIMI  (serbest tutar + banknot adedi + rulo adedi)
+//  KASA SAYIMI  (montant libre + nombre de billets + nombre de rouleaux)
 // ============================================================================
 const BANKNOT = [200, 100, 50, 20, 10, 5];
 const RULO = [   // [anahtar, ad, bir rulonun degeri]
   ["r200", "2 €",     50],
   ["r100", "1 €",     25],
-  ["r50",  "50 cent", 20],
-  ["r20",  "20 cent", 8],
-  ["r10",  "10 cent", 4],
-  ["r5",   "5 cent",  2.5],
-  ["r2",   "2 cent",  1],
-  ["r1",   "1 cent",  0.5],
+  ["r50",  "50 cts",  20],
+  ["r20",  "20 cts",  8],
+  ["r10",  "10 cts",  4],
+  ["r5",   "5 cts",   2.5],
+  ["r2",   "2 cts",   1],
+  ["r1",   "1 ct",    0.5],
 ];
 function sayimSatir(id, ad, alt){
   return `<div class="sat"><span class="ad">${ad}${alt ? `<small>${alt}</small>` : ""}</span>
@@ -550,8 +549,8 @@ function sayimHesapla(){
   return Math.round(top*100)/100;
 }
 function sayimAc(){
-  document.getElementById("sy_banknot").innerHTML = BANKNOT.map(b => sayimSatir("b" + b, b + " €", "")).join("");
-  document.getElementById("sy_rulo").innerHTML = RULO.map(([id, ad, d]) => sayimSatir(id, ad + " rulo", "1 rulo = " + euro(d))).join("");
+  document.getElementById("sy_banknot").innerHTML = BANKNOT.map(b => sayimSatir("b" + b, "Billet " + b + " €", "")).join("");
+  document.getElementById("sy_rulo").innerHTML = RULO.map(([id, ad, d]) => sayimSatir(id, "Rouleau " + ad, "1 rouleau = " + euro(d))).join("");
   const k = tekKayit("kasa");
   const det = (k && k.detay) || {};
   document.getElementById("sy_serbest").value = k ? (k.detay ? (det.serbest ? sayiYaz(det.serbest) : "") : sayiYaz(k.tutar)) : "";
@@ -567,11 +566,11 @@ function sayimKaydet(){
   const hata = m => { document.getElementById("sy_hata").textContent = m; };
   const detay = {};
   const s = document.getElementById("sy_serbest").value.trim();
-  if (s) { const v = sayiOku(s); if (!isFinite(v)) return hata("Serbest tutar geçerli değil."); detay.serbest = v; }
+  if (s) { const v = sayiOku(s); if (!isFinite(v)) return hata("Montant libre invalide."); detay.serbest = v; }
   for (const id of [...BANKNOT.map(b => "b" + b), ...RULO.map(r => r[0])]) {
     const ham = document.getElementById("sy_" + id).value.trim(); if (!ham) continue;
     const n = sayiOku(ham);
-    if (!Number.isInteger(n) || n < 0) return hata("Adetler tam sayı olmalı (0, 1, 2…).");
+    if (!Number.isInteger(n) || n < 0) return hata("Les nombres doivent être entiers (0, 1, 2…).");
     if (n) detay[id] = n;
   }
   const tutar = sayimHesapla();
@@ -582,7 +581,7 @@ function sayimKaydet(){
 }
 function sayimSil(){
   const k = tekKayit("kasa"); if (!k) return;
-  if (!confirm(`Kasa sayımı (${euro(k.tutar)}) silinsin mi?`)) return;
+  if (!confirm(`Supprimer le comptage de caisse (${euro(k.tutar)}) ?`)) return;
   k.sil = true; k.t = simdi(); sayimKapat(); degisti();
 }
 
@@ -593,11 +592,11 @@ function sezonDegis(id){ aktifSezon = id; try { localStorage.setItem(LS_SEZON, i
 function yeniSezon(){
   const eski = sezonlar().find(s => s.id === aktifSezon);
   const d = new Date(); const y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear()-1;
-  const ad = prompt("Yeni sezonun adı:", `${y}-${y+1}`); if (!ad) return;
+  const ad = prompt("Nom de la nouvelle saison :", `${y}-${y+1}`); if (!ad) return;
   let devir = NaN;
   if (eski) {
-    const nak = deger("kasa") + deger("bozuk");
-    const c = prompt(`"Geçen seneden kalan" (sene başında dükkandaki nakit)\n\n${eski.ad} sayımı: kasada ${euro(deger("kasa"))} + bozuk ${euro(deger("bozuk"))}\n\nTutarı değiştirebilirsin.`, nak ? sayiYaz(nak) : "");
+    const nak = deger("kasa");
+    const c = prompt(`« Reste de l'an dernier » (espèces en caisse au début de l'année)\n\nComptage ${eski.ad} : en caisse ${euro(nak)}\n\nVous pouvez modifier le montant.`, nak ? sayiYaz(nak) : "");
     if (c === null) return;
     devir = sayiOku(c);
   }
@@ -613,16 +612,16 @@ function indir(ad, icerik, tip){
 }
 function csvIndir(){
   const sz = sezonlar().find(s => s.id === aktifSezon);
-  const satir = [["Tür","Ay","Gün","Tutar"]];
+  const satir = [["Type","Mois","Jour","Montant"]];
   for (const tur of Object.keys(T)) {
     if (T[tur].tek) { const k = tekKayit(tur); if (k) satir.push([T[tur].ad, "", k.tarih || "", sayiYaz(k.tutar)]); continue; }
     for (const k of liste(tur).sort((a,b) => (kayitAy(a)+(a.tarih||"")) < (kayitAy(b)+(b.tarih||"")) ? -1 : 1))
       satir.push([T[tur].ad, kayitAy(k), k.tarih ? Number(k.tarih.slice(8)) : "", sayiYaz(k.tutar)]);
   }
   const csv = "﻿" + satir.map(x => x.map(c => `"${String(c).replace(/"/g,'""')}"`).join(";")).join("\r\n");
-  indir(`kasa_${sz ? sz.ad : "sezon"}.csv`, csv, "text/csv;charset=utf-8");
+  indir(`caisse_${sz ? sz.ad : "saison"}.csv`, csv, "text/csv;charset=utf-8");
 }
-function yedekIndir(){ indir(`kasa_yedek_${bugun()}.json`, JSON.stringify(veri, null, 1), "application/json"); }
+function yedekIndir(){ indir(`caisse_sauvegarde_${bugun()}.json`, JSON.stringify(veri, null, 1), "application/json"); }
 function yedekYukle(inp){
   const f = inp.files[0]; if (!f) return;
   const rd = new FileReader();
@@ -630,9 +629,9 @@ function yedekYukle(inp){
     try {
       const d = JSON.parse(rd.result);
       if (!d || !Array.isArray(d.kayitlar)) throw 0;
-      if (!confirm(`${d.kayitlar.length} kayıt bulundu. Mevcut verilerle birleştirilsin mi? (Hiçbir şey silinmez)`)) return;
+      if (!confirm(`${d.kayitlar.length} enregistrements trouvés. Les fusionner avec les données actuelles ? (Rien n'est supprimé)`)) return;
       veri = birlestir(veri, d); duzenleVeri(); degisti();
-    } catch(e) { alert("Dosya okunamadı."); }
+    } catch(e) { alert("Impossible de lire le fichier."); }
     inp.value = "";
   };
   rd.readAsText(f);
@@ -643,7 +642,7 @@ function yedekYukle(inp){
 // ============================================================================
 if (duzenleVeri()) { yerelKaydet(); bekliyor(true); }
 ciz();
-durum("", "Bağlanıyor…");
+durum("", "Connexion…");
 senkron();
 </script>
 </body>
