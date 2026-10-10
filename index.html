@@ -23,6 +23,10 @@ button,input,select{font:inherit;color:inherit}
 
 .ust{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0 14px}
 .ust h1{margin:0;font-size:22px;letter-spacing:-.01em;flex:1;min-width:80px}
+.sekmeler{display:flex;background:#e6e9ef;border-radius:12px;padding:3px;gap:2px}
+.sekmeler a{padding:7px 16px;border-radius:9px;font-weight:700;font-size:17px;color:var(--gri);text-decoration:none}
+.sekmeler a.aktif{background:var(--kart);color:var(--yazi);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bosluk{flex:1}
 .ust select{border:1px solid var(--cizgi);background:var(--kart);border-radius:20px;padding:7px 12px;font-size:14px}
 .durum{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gri);white-space:nowrap}
 .nokta{width:8px;height:8px;border-radius:50%;background:var(--acik)}
@@ -133,7 +137,11 @@ button,input,select{font:inherit;color:inherit}
 <div class="sayfa">
 
 <div class="ust">
-  <h1>Caisse</h1>
+  <nav class="sekmeler">
+    <a class="aktif" href="./">Caisse</a>
+    <a href="prets.html">Prêts</a>
+  </nav>
+  <div class="bosluk"></div>
   <select id="sezonSec" onchange="sezonDegis(this.value)"></select>
   <div class="durum"><span class="nokta" id="nokta"></span><span id="durumYazi">…</span></div>
 </div>
