@@ -454,8 +454,8 @@ function kiraciAc(eid, id){
   pencereAc(`<h3>${id ? "Modifier le locataire" : "Nouveau locataire"}</h3>
     <div class="acik2">${kacis(evAd(bul("evler", k.ev) || {}))}</div>
     <label>Civilité</label><select id="kCiv">${secim(CIVLER, k.civ)}</select>
-    <div class="iki"><div><label>Nom</label><input id="kNom" value="${kacis(k.nom)}" placeholder="ex. SCORICI"></div>
-    <div><label>Prénom</label><input id="kPrenom" value="${kacis(k.prenom)}" placeholder="ex. Mihaela"></div></div>
+    <div class="iki"><div><label>Nom</label><input id="kNom" value="${kacis(k.nom)}" placeholder="ex. DUPONT"></div>
+    <div><label>Prénom</label><input id="kPrenom" value="${kacis(k.prenom)}" placeholder="ex. Marie"></div></div>
     <div class="iki"><div><label>Date de naissance</label><input id="kDogum" type="date" value="${k.naissance||""}"></div>
     <div><label>Date d'entrée</label><input id="kGiris" type="date" value="${k.entree||""}"></div></div>
     <label>Date de départ (si le locataire est parti)</label><input id="kCikis" type="date" value="${k.sortie||""}">
