@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f8">
+<title>Loyers</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4f5f8; --kart:#fff; --yazi:#161c27; --gri:#6f7888; --acik:#a3abb8; --cizgi:#e8ebf0;
+  --tur:#e0702a; --turA:#fdf1e8; --mavi:#2f6be0; --maviA:#ebf1fd;
+  --kir:#d23b3b; --kirA:#fdeeee; --yes:#15894c; --yesA:#e7f6ee; --sar:#c98a0b; --sarA:#fdf5e1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--yazi);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:0 clamp(16px, 2.5vw, 40px) 48px}
+button,input,select,textarea{font:inherit;color:inherit}
+.r{font-variant-numeric:tabular-nums}
+
+.ust{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0 14px}
+.sekmeler{display:flex;background:#e6e9ef;border-radius:12px;padding:3px;gap:2px}
+.sekmeler a{padding:7px 16px;border-radius:9px;font-weight:700;font-size:17px;color:var(--gri);text-decoration:none}
+.sekmeler a.aktif{background:var(--kart);color:var(--yazi);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bosluk{flex:1}
+.ust select{border:1px solid var(--cizgi);background:var(--kart);border-radius:20px;padding:7px 12px;font-size:14px}
+.durum{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gri);white-space:nowrap}
+.nokta{width:8px;height:8px;border-radius:50%;background:var(--acik)}
+.nokta.ok{background:#22b066} .nokta.bekle{background:#f0b429} .nokta.hata{background:var(--kir)}
+.pin input{text-align:center;letter-spacing:.3em;font-size:24px}
+
+/* resume */
+.ozet{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
+.okart{background:var(--kart);border-radius:20px;padding:18px 20px;border:2px solid var(--cizgi)}
+.okart.ana{border-color:#bfe6cf;background:linear-gradient(0deg,var(--yesA),#fff);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.okart .etk{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--gri);text-transform:uppercase}
+.okart .buyuk{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.okart.ana .buyuk{color:var(--yes)}
+.okart .alt{font-size:13px;color:var(--gri)}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--yazi);color:#fff}
+.btn.yes{background:var(--yes)} .btn.mavi{background:var(--mavi)}
+.btn.ince{background:#fff;color:var(--yazi);border:1px solid var(--cizgi);font-weight:600}
+.btn.sil{background:var(--kirA);color:var(--kir)}
+.btn.kucuk{padding:6px 10px;font-size:13px;border-radius:8px}
+
+.bolum{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:26px 2px 10px}
+.bolum h2{margin:0;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--gri)}
+
+/* grille des loyers */
+.izgara{background:var(--kart);border-radius:18px;overflow:hidden}
+.isat{display:grid;grid-template-columns:minmax(200px,1.2fr) 3fr;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--cizgi)}
+.isat:first-child{border-top:0}
+.isat.sirketBas{background:#fafbfc;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gri);padding:9px 16px;display:block}
+.kisi b{display:block}
+.kisi span{font-size:12px;color:var(--gri)}
+.aylar12{display:grid;grid-template-columns:repeat(12,1fr);gap:5px}
+.ay{border:0;border-radius:8px;padding:7px 0 6px;font-size:11px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--acik);text-align:center;line-height:1.1}
+.ay small{display:block;font-size:10px;font-weight:600;margin-top:2px}
+.ay.odendi{background:var(--yesA);color:var(--yes)}
+.ay.kismi{background:var(--sarA);color:var(--sar)}
+.ay.gecikti{background:var(--kirA);color:var(--kir)}
+.ay.yok{opacity:.35;cursor:default}
+.ay:not(.yok):hover{outline:2px solid var(--mavi)}
+.lejant{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--gri)}
+.lejant i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+/* historique */
+.tablo{background:var(--kart);border-radius:18px;overflow:hidden}
+.hsat{display:grid;grid-template-columns:96px 90px 1.3fr 1.3fr 110px 110px 90px 70px;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid var(--cizgi);font-size:14px}
+.hsat.bas{background:#fafbfc;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gri);border-top:0}
+.hsat .sag{text-align:right}
+.hsat .gri{color:var(--gri);font-size:13px}
+.rozet{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--yesA);color:var(--yes)}
+.rozet.kismi{background:var(--sarA);color:var(--sar)}
+.bos{padding:26px 16px;text-align:center;color:var(--gri)}
+
+/* gestion */
+.yonetim{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.skart{background:var(--kart);border-radius:18px;padding:16px 18px;border-top:4px solid var(--mavi)}
+.skart h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+.skart h3 span{flex:1}
+.skart .bilgi{font-size:13px;color:var(--gri);margin:2px 0 10px}
+.ev{border:1px solid var(--cizgi);border-radius:12px;padding:10px 12px;margin-top:8px}
+.ev .evb{display:flex;align-items:center;gap:8px}
+.ev .evb b{flex:1}
+.ev .evd{font-size:12px;color:var(--gri)}
+.kir{display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:8px;font-size:14px}
+.kir span{flex:1}
+.kir.parti{opacity:.55}
+.link{border:0;background:none;color:var(--mavi);font-weight:600;cursor:pointer;padding:2px 4px;font-size:13px}
+
+.araclar{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;margin-top:24px}
+.araclar button{border:0;background:none;color:var(--gri);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px}
+.dipnot{text-align:center;font-size:12px;color:var(--acik);margin-top:6px}
+
+/* fenetre */
+.perde{position:fixed;inset:0;background:rgba(18,24,34,.5);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.perde.acik{display:flex}
+.pencere{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:420px;max-height:94vh;overflow-y:auto}
+.pencere h3{margin:0 0 4px;font-size:18px}
+.pencere .acik2{font-size:13px;color:var(--gri)}
+.pencere label{display:block;font-size:13px;color:var(--gri);margin:10px 0 4px}
+.pencere input,.pencere select,.pencere textarea{width:100%;padding:10px 11px;border:1px solid #d5d9e0;border-radius:10px;font-size:16px;background:#fff}
+.pencere input[type=checkbox]{width:auto}
+.pencere .iki{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pencere .kutuSat{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
+.pencere .bilgiKutu{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px}
+.pencere .bilgiKutu.sar{background:var(--sarA);color:#7a5406}
+.imzaOn{max-height:70px;max-width:100%;display:block;margin-top:6px;border:1px dashed var(--cizgi);border-radius:8px;padding:4px}
+.dugmeler{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.dugmeler .btn{flex:1;padding:12px}
+.dugmeler .btn.sil{flex:0 0 auto}
+.hata{color:var(--kir);font-size:13px;min-height:18px;margin-top:6px}
+
+@media (max-width:820px){
+  .ozet{grid-template-columns:1fr 1fr}
+  .okart.ana{grid-column:1/3}
+  .okart .buyuk{font-size:28px}
+  .isat{grid-template-columns:1fr}
+  .aylar12{grid-template-columns:repeat(6,1fr)}
+  .hsat.bas{display:none}
+  .hsat{grid-template-columns:1fr auto;gap:2px 10px}
+  .hsat > div:nth-child(1){grid-column:1;color:var(--gri);font-size:13px}
+  .hsat > div:nth-child(2){grid-column:2;grid-row:1;text-align:right}
+  .hsat > div:nth-child(3){grid-column:1;font-weight:600}
+  .hsat > div:nth-child(4){grid-column:1/3}
+  .hsat > div:nth-child(5){grid-column:1}
+  .hsat > div:nth-child(6){grid-column:2;grid-row:3;text-align:right}
+  .hsat > div:nth-child(7){grid-column:1}
+  .hsat > div:nth-child(8){grid-column:2;grid-row:4}
+}
+</style>
+</head>
+<body>
+
+<div class="ust">
+  <nav class="sekmeler">
+    <a href="./">Caisse</a>
+    <a href="prets.html">Prêts</a>
+    <a class="aktif" href="#">Loyers</a>
+  </nav>
+  <div class="bosluk"></div>
+  <select id="yilSec" onchange="yil=+this.value;ciz()"></select>
+  <div class="durum"><span class="nokta" id="nokta"></span><span id="durumYazi">…</span></div>
+</div>
+
+<div class="ozet">
+  <div class="okart ana">
+    <div style="flex:1;min-width:200px">
+      <div class="etk" id="oBaslik">Loyers encaissés</div>
+      <div class="buyuk r" id="oToplam">0,00 €</div>
+      <div class="alt" id="oAlt"></div>
+    </div>
+    <button class="btn yes" onclick="odemeAc()">+ Loyer reçu</button>
+  </div>
+  <div class="okart"><div class="etk">Ce mois-ci</div><div class="buyuk r" id="oBuAy">–</div><div class="alt" id="oBuAyAlt"></div></div>
+  <div class="okart"><div class="etk">Impayés</div><div class="buyuk r" id="oGecik">0</div><div class="alt" id="oGecikAlt">mois en retard</div></div>
+</div>
+
+<div class="bolum">
+  <h2 id="izgaraBaslik">Loyers par locataire</h2>
+  <div class="lejant"><span><i style="background:var(--yesA);border:1px solid var(--yes)"></i>payé</span><span><i style="background:var(--sarA);border:1px solid var(--sar)"></i>partiel</span><span><i style="background:var(--kirA);border:1px solid var(--kir)"></i>impayé</span><span><i style="background:var(--bg);border:1px solid var(--acik)"></i>à venir</span></div>
+</div>
+<div class="izgara" id="izgara"></div>
+
+<div class="bolum"><h2>Historique des paiements</h2></div>
+<div class="tablo" id="gecmis"></div>
+
+<div class="bolum">
+  <h2>Sociétés, logements et locataires</h2>
+  <button class="btn ince" onclick="sirketAc()">+ Société</button>
+</div>
+<div class="yonetim" id="yonetim"></div>
+
+<div class="bolum"><h2>Document</h2></div>
+<div class="okart" style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:14px">
+  <label>Modèle :
+    <select id="ayModel" onchange="ayarDegis()">
+      <option value="quittance">Quittance de loyer (recommandé)</option>
+      <option value="attestation">Attestation de loyer</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="ayDogum" onchange="ayarDegis()"> Afficher la date de naissance du locataire</label>
+</div>
+
+<div class="araclar">
+  <button onclick="csvIndir()">Exporter vers Excel</button>
+  <button onclick="yedekIndir()">Télécharger une sauvegarde</button>
+  <button onclick="document.getElementById('dosya').click()">Restaurer une sauvegarde</button>
+  <button onclick="senkron()">Synchroniser</button>
+  <button onclick="pinUnut()">Oublier le PIN</button>
+  <input type="file" id="dosya" accept=".json,application/json" style="display:none" onchange="yedekYukle(this)">
+</div>
+<div class="dipnot">Les PDF ne sont pas stockés : ils sont recréés à la demande à partir des paiements enregistrés. Chaque modification est enregistrée sur cet appareil et dans le cloud ; sans internet, elle est mise en attente.</div>
+
+<div class="perde" id="perde" onclick="if(event.target===this)kapat()">
+  <div class="pencere" id="pencere"></div>
+</div>
+
+<div class="perde" id="pinPerde">
+  <div class="pencere pin" style="text-align:center;max-width:340px">
+    <h3>Code PIN</h3>
+    <input id="pinGiris" type="password" inputmode="numeric" autocomplete="off" style="margin-top:12px" onkeydown="if(event.key==='Enter')pinGonder()">
+    <div class="hata" id="pinHata"></div>
+    <div class="dugmeler"><button class="btn" onclick="pinGonder()">Entrer</button></div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+//  VERI
+//  { v:1, ayar:{model, dogum}, sirketler:[], evler:[], kiracilar:[], odemeler:[] }
+//  her kayit: { id, t, ... , sil? }  — senkronda id + t ile birlestirilecek
+//  odeme.snap = PDF icin o anki sirket/ev/kiraci bilgisi (belge hep ayni cikar)
+// ============================================================================
+const WORKER_URL = "https://kasa-data.w3ruslan-8c5.workers.dev/?f=loyer";
+const LS_VERI = "loyerVeri", LS_BEKLE = "loyerBekliyor", LS_PIN = "kasaPin";   // PIN = meme PIN que la caisse
+const AYLAR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const AYK = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
+const MODLAR = ["Espèces","Virement","Chèque","Prélèvement"];
+const CIVLER = ["Madame","Mademoiselle","Monsieur"];
+
+function bosVeri(){
+  const t = Date.now();
+  return { v:1, ayar:{ model:"quittance", dogum:false }, kiracilar:[], evler:[], odemeler:[], sirketler:[
+    { id:"sci", t, ad:"SCI NESLI ASLI", tur:"Société Civile Immobilière", adres:"22 Place Saint-Martin, 44521 Oudon, France", lieu:"Oudon", gerant:"", siret:"" },
+    { id:"ei",  t, ad:"EI GURBET YILMAZ", tur:"Entreprise individuelle", adres:"", lieu:"Oudon", gerant:"", siret:"" },
+  ]};
+}
+function yukle(){
+  try { const d = JSON.parse(localStorage.getItem(LS_VERI) || "null"); if (d && Array.isArray(d.odemeler)) return d; } catch(e){}
+  return bosVeri();
+}
+let veri = yukle();
+function kaydetYerel(){ try { localStorage.setItem(LS_VERI, JSON.stringify(veri)); } catch(e){ alert("Stockage plein : l'image de signature est peut-être trop grande."); } }
+function degisti(){
+  kaydetYerel(); bekliyor(true); ciz(); durum("bekle", "Enregistrement…");
+  clearTimeout(zamanlayici); zamanlayici = setTimeout(senkron, 700);
+}
+const yeniId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const bugun = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const buAy = () => bugun().slice(0,7);
+const canli = a => a.filter(x => !x.sil);
+const bul = (liste, id) => veri[liste].find(x => x.id === id);
+
+const EUR = new Intl.NumberFormat("fr-FR", { style:"currency", currency:"EUR" });
+const para = x => EUR.format(x || 0);
+const kacis = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const tarihFr = s => s ? s.split("-").reverse().join("/") : "";
+const ayAdi = ym => AYLAR[+ym.slice(5,7)-1] + " " + ym.slice(0,4);
+const kisiAd = k => `${k.civ} ${(k.nom||"").toUpperCase()} ${k.prenom||""}`.trim();
+const evAd = e => [e.adres, e.detay].filter(Boolean).join(" — ");
+const sayiOku = s => { s = String(s).replace(/\s|€/g, ""); if (s.includes(",")) s = s.replace(/\./g,"").replace(",","."); return Math.round(Number(s)*100)/100; };
+const sayiYaz = x => (x||0).toFixed(2).replace(".", ",");
+
+// ----------------------------------------------------------------------------
+//  Durum hesaplari
+// ----------------------------------------------------------------------------
+let yil = new Date().getFullYear();
+function ayOdemeleri(kid, ym){ return canli(veri.odemeler).filter(o => o.kiraci === kid && o.donem === ym); }
+function ayDurum(k, ym){
+  const ev = bul("evler", k.ev);
+  const giris = (k.entree || "0000-00").slice(0,7), cikis = k.sortie ? k.sortie.slice(0,7) : "9999-99";
+  const od = ayOdemeleri(k.id, ym);
+  const odenen = od.reduce((a,o) => a + o.tutar, 0);
+  const borc = od.length ? Math.max(...od.map(o => o.loyer + o.charges)) : (ev ? (+ev.loyer||0) + (+ev.charges||0) : 0);
+  if (!od.length && (ym < giris || ym > cikis)) return { tip:"yok", odenen, borc, od };
+  if (od.length && odenen >= borc - 0.005) return { tip:"odendi", odenen, borc, od };
+  if (od.length) return { tip:"kismi", odenen, borc, od };
+  return { tip: ym <= buAy() ? "gecikti" : "gelecek", odenen, borc, od };
+}
+
+// ============================================================================
+//  CIZIM
+// ============================================================================
+function ciz(){
+  // annees
+  const yillar = new Set([new Date().getFullYear(), yil, ...canli(veri.odemeler).map(o => +o.donem.slice(0,4))]);
+  document.getElementById("yilSec").innerHTML = [...yillar].sort((a,b)=>b-a).map(y => `<option ${y===yil?"selected":""}>${y}</option>`).join("");
+  document.getElementById("ayModel").value = veri.ayar.model;
+  document.getElementById("ayDogum").checked = !!veri.ayar.dogum;
+
+  const kiracilar = canli(veri.kiracilar);
+  const yilOd = canli(veri.odemeler).filter(o => o.donem.startsWith(yil + "-"));
+
+  // resume
+  document.getElementById("oBaslik").textContent = `Loyers encaissés ${yil}`;
+  document.getElementById("oToplam").textContent = para(yilOd.reduce((a,o) => a + o.tutar, 0));
+  document.getElementById("oAlt").textContent = `${yilOd.length} paiement${yilOd.length>1?"s":""} · ${kiracilar.filter(k=>!k.sortie).length} locataire(s) actif(s)`;
+  const ba = buAy();
+  const buAyK = kiracilar.filter(k => ayDurum(k, ba).tip !== "yok");
+  const buAyOk = buAyK.filter(k => ayDurum(k, ba).tip === "odendi").length;
+  document.getElementById("oBuAy").textContent = buAyK.length ? `${buAyOk} / ${buAyK.length}` : "–";
+  document.getElementById("oBuAyAlt").textContent = `payés · ${AYLAR[new Date().getMonth()]}`;
+  let gec = 0, gecTutar = 0;
+  for (const k of kiracilar) for (let m = 1; m <= 12; m++) {
+    const ym = `${yil}-${String(m).padStart(2,"0")}`; const d = ayDurum(k, ym);
+    if (d.tip === "gecikti" || d.tip === "kismi") { gec++; gecTutar += d.borc - d.odenen; }
+  }
+  document.getElementById("oGecik").textContent = gec;
+  document.getElementById("oGecik").style.color = gec ? "var(--kir)" : "var(--yes)";
+  document.getElementById("oGecikAlt").textContent = gec ? `mois en retard · ${para(gecTutar)}` : "aucun retard";
+
+  // grille
+  document.getElementById("izgaraBaslik").textContent = `Loyers par locataire — ${yil}`;
+  let h = "";
+  for (const s of canli(veri.sirketler)) {
+    const ks = kiracilar.filter(k => { const e = bul("evler", k.ev); return e && e.sirket === s.id; })
+      .filter(k => !k.sortie || k.sortie.slice(0,4) >= String(yil) || yilOd.some(o => o.kiraci === k.id));
+    if (!ks.length) continue;
+    h += `<div class="isat sirketBas">${kacis(s.ad)}</div>`;
+    for (const k of ks) {
+      const e = bul("evler", k.ev);
+      h += `<div class="isat"><div class="kisi"><b>${kacis(kisiAd(k))}${k.sortie?' <span>(parti)</span>':""}</b><span>${kacis(e.detay || e.adres)} · ${para((+e.loyer||0)+(+e.charges||0))}/mois</span></div><div class="aylar12">`;
+      for (let m = 1; m <= 12; m++) {
+        const ym = `${yil}-${String(m).padStart(2,"0")}`, d = ayDurum(k, ym);
+        const alt = d.tip === "odendi" ? "✓" : d.tip === "kismi" ? Math.round(d.odenen)+"€" : d.tip === "gecikti" ? "!" : "";
+        h += `<button class="ay ${d.tip}" ${d.tip==="yok"?"disabled":""} onclick="ayTik('${k.id}','${ym}')" title="${ayAdi(ym)}">${AYK[m-1]}<small>${alt||"&nbsp;"}</small></button>`;
+      }
+      h += `</div></div>`;
+    }
+  }
+  document.getElementById("izgara").innerHTML = h || `<div class="bos">Aucun locataire pour l'instant.<br>Ajoutez d'abord un logement puis un locataire dans « Sociétés, logements et locataires » ci-dessous.</div>`;
+
+  // historique
+  const liste = yilOd.slice().sort((a,b) => (b.tarih + b.no).localeCompare(a.tarih + a.no));
+  let g = `<div class="hsat bas"><div>Payé le</div><div>N°</div><div>Locataire</div><div>Logement</div><div>Période</div><div class="sag">Montant</div><div>Mode</div><div></div></div>`;
+  if (!liste.length) g += `<div class="bos">Aucun paiement en ${yil}.</div>`;
+  for (const o of liste) {
+    const kismi = o.tutar < o.loyer + o.charges - 0.005;
+    g += `<div class="hsat r">
+      <div>${tarihFr(o.tarih)}</div>
+      <div><span class="rozet ${kismi?"kismi":""}">${kacis(o.no)}</span></div>
+      <div>${kacis(kisiAd(o.snap.kiraci))}</div>
+      <div class="gri">${kacis(o.snap.ev.detay || o.snap.ev.adres)}</div>
+      <div>${ayAdi(o.donem)}</div>
+      <div class="sag"><b>${para(o.tutar)}</b>${kismi?`<br><span class="gri">sur ${para(o.loyer+o.charges)}</span>`:""}</div>
+      <div class="gri">${kacis(o.mod)}</div>
+      <div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn kucuk mavi" onclick="pdfUret('${o.id}')">PDF</button><button class="link" onclick="odemeAc('${o.id}')">✎</button></div>
+    </div>`;
+  }
+  document.getElementById("gecmis").innerHTML = g;
+
+  // gestion
+  document.getElementById("yonetim").innerHTML = canli(veri.sirketler).map(s => {
+    const evler = canli(veri.evler).filter(e => e.sirket === s.id);
+    return `<div class="skart">
+      <h3><span>${kacis(s.ad)}</span><button class="link" onclick="sirketAc('${s.id}')">Modifier</button></h3>
+      <div class="bilgi">${kacis(s.tur)}${s.adres?" · "+kacis(s.adres):""}${s.gerant?"<br>Gérant(e) : "+kacis(s.gerant):""}${s.imza?" · ✍ signature":""}</div>
+      ${evler.map(e => {
+        const ks = canli(veri.kiracilar).filter(k => k.ev === e.id).sort((a,b) => !!a.sortie - !!b.sortie);
+        return `<div class="ev">
+          <div class="evb"><b>${kacis(e.detay || "Logement")}</b><button class="link" onclick="evAc('${s.id}','${e.id}')">Modifier</button></div>
+          <div class="evd">${kacis(e.adres)} · loyer ${para(+e.loyer)} + charges ${para(+e.charges)}</div>
+          ${ks.map(k => `<div class="kir ${k.sortie?"parti":""}"><span>👤 ${kacis(kisiAd(k))}${k.sortie?" — parti le "+tarihFr(k.sortie):""}</span><button class="link" onclick="kiraciAc('${e.id}','${k.id}')">Modifier</button></div>`).join("")}
+          <button class="link" style="margin-top:6px" onclick="kiraciAc('${e.id}')">+ Locataire</button>
+        </div>`;
+      }).join("")}
+      <button class="btn ince kucuk" style="margin-top:10px" onclick="evAc('${s.id}')">+ Logement</button>
+    </div>`;
+  }).join("");
+}
+function ayarDegis(){
+  veri.ayar = { model: document.getElementById("ayModel").value, dogum: document.getElementById("ayDogum").checked, t: Date.now() };
+  degisti();
+}
+
+// ============================================================================
+//  FENETRE GENERIQUE
+// ============================================================================
+let pencereKaydet = null;
+function pencereAc(html, kaydet){ document.getElementById("pencere").innerHTML = html; pencereKaydet = kaydet; document.getElementById("perde").classList.add("acik"); }
+function kapat(){ document.getElementById("perde").classList.remove("acik"); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") kapat(); });
+const al = id => document.getElementById(id);
+const deger = id => al(id).value.trim();
+const hata = m => { al("fHata").textContent = m; return false; };
+const secim = (dizi, v) => dizi.map(x => `<option ${x===v?"selected":""}>${kacis(x)}</option>`).join("");
+const dugmeler = (silFn) => `<div class="hata" id="fHata"></div><div class="dugmeler">
+  ${silFn ? `<button class="btn sil" onclick="${silFn}">Supprimer</button>` : ""}
+  <button class="btn ince" onclick="kapat()">Annuler</button>
+  <button class="btn" onclick="pencereKaydet()">Enregistrer</button></div>`;
+
+// ---------------- Société ----------------
+let imzaGecici = null;
+function sirketAc(id){
+  const s = id ? bul("sirketler", id) : {};
+  imzaGecici = s.imza || null;
+  pencereAc(`<h3>${id ? "Modifier la société" : "Nouvelle société"}</h3>
+    <label>Nom de la société</label><input id="sAd" value="${kacis(s.ad)}" placeholder="ex. SCI NESLI ASLI">
+    <label>Forme</label><input id="sTur" value="${kacis(s.tur)}" placeholder="ex. Société Civile Immobilière" list="turListe">
+    <datalist id="turListe"><option>Société Civile Immobilière</option><option>Entreprise individuelle</option><option>SARL</option><option>SAS</option></datalist>
+    <label>Adresse</label><input id="sAdres" value="${kacis(s.adres)}" placeholder="ex. 22 Place Saint-Martin, 44521 Oudon, France">
+    <div class="iki"><div><label>Ville (« Fait à »)</label><input id="sLieu" value="${kacis(s.lieu)}" placeholder="Oudon"></div>
+    <div><label>SIRET (facultatif)</label><input id="sSiret" value="${kacis(s.siret)}"></div></div>
+    <label>Gérant(e) — nom sur le document (facultatif)</label><input id="sGerant" value="${kacis(s.gerant)}" placeholder="ex. Gurbet YILMAZ">
+    <label>Signature / cachet (image, facultatif)</label>
+    <input type="file" id="sImza" accept="image/*" onchange="imzaSec(this)">
+    <div id="imzaYer">${imzaGecici ? `<img class="imzaOn" src="${imzaGecici.d}"><button class="link" onclick="imzaGecici=null;al('imzaYer').innerHTML=''">Retirer l'image</button>` : ""}</div>
+    <div class="acik2" style="margin-top:4px">Sans image, un espace « Signature et cachet » est laissé pour signer à la main.</div>
+    ${dugmeler(id && !canli(veri.evler).some(e => e.sirket === id) ? `sirketSil('${id}')` : "")}`,
+  () => {
+    if (!deger("sAd")) return hata("Indiquez le nom de la société.");
+    const alan = { ad:deger("sAd"), tur:deger("sTur"), adres:deger("sAdres"), lieu:deger("sLieu"), siret:deger("sSiret"), gerant:deger("sGerant"), imza:imzaGecici, t:Date.now() };
+    if (id) Object.assign(s, alan); else veri.sirketler.push({ id:yeniId(), ...alan });
+    kapat(); degisti();
+  });
+}
+function imzaSec(inp){
+  const f = inp.files[0]; if (!f) return;
+  const img = new Image();
+  img.onload = () => {   // 600 px'e kucult, PNG (seffaflik korunur)
+    const o = Math.min(1, 600 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width*o); c.height = Math.round(img.height*o);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    imzaGecici = { d: c.toDataURL("image/png"), w: c.width, h: c.height };
+    al("imzaYer").innerHTML = `<img class="imzaOn" src="${imzaGecici.d}">`;
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(f);
+}
+function sirketSil(id){ if (!confirm("Supprimer cette société ?")) return; Object.assign(bul("sirketler", id), { sil:true, t:Date.now() }); kapat(); degisti(); }
+
+// ---------------- Logement ----------------
+function evAc(sid, id){
+  const e = id ? bul("evler", id) : { sirket:sid };
+  const sirketler = canli(veri.sirketler);
+  pencereAc(`<h3>${id ? "Modifier le logement" : "Nouveau logement"}</h3>
+    <label>Société propriétaire</label><select id="eSirket">${sirketler.map(s => `<option value="${s.id}" ${s.id===e.sirket?"selected":""}>${kacis(s.ad)}</option>`).join("")}</select>
+    <label>Adresse du logement</label><input id="eAdres" value="${kacis(e.adres)}" placeholder="ex. 6 Place Saint Martin, 44521 Oudon">
+    <label>Précision (appartement, étage…)</label><input id="eDetay" value="${kacis(e.detay)}" placeholder="ex. Appartement 4, 2ème étage">
+    <div class="iki"><div><label>Loyer hors charges (€/mois)</label><input id="eLoyer" inputmode="decimal" value="${e.loyer!=null?sayiYaz(+e.loyer):""}"></div>
+    <div><label>Charges (€/mois)</label><input id="eCharges" inputmode="decimal" value="${e.charges!=null?sayiYaz(+e.charges):"0,00"}"></div></div>
+    ${dugmeler(id && !canli(veri.kiracilar).some(k => k.ev === id) ? `evSil('${id}')` : "")}`,
+  () => {
+    const loyer = sayiOku(deger("eLoyer")), charges = sayiOku(deger("eCharges") || "0");
+    if (!deger("eAdres")) return hata("Indiquez l'adresse du logement.");
+    if (!(loyer >= 0) || isNaN(loyer)) return hata("Indiquez le loyer.");
+    if (isNaN(charges) || charges < 0) return hata("Charges invalides.");
+    const alan = { sirket:al("eSirket").value, adres:deger("eAdres"), detay:deger("eDetay"), loyer, charges, t:Date.now() };
+    if (id) Object.assign(e, alan); else veri.evler.push({ id:yeniId(), ...alan });
+    kapat(); degisti();
+  });
+}
+function evSil(id){ if (!confirm("Supprimer ce logement ?")) return; Object.assign(bul("evler", id), { sil:true, t:Date.now() }); kapat(); degisti(); }
+
+// ---------------- Locataire ----------------
+function kiraciAc(eid, id){
+  const k = id ? bul("kiracilar", id) : { ev:eid, civ:"Madame", entree:bugun() };
+  const odemeVar = id && canli(veri.odemeler).some(o => o.kiraci === id);
+  pencereAc(`<h3>${id ? "Modifier le locataire" : "Nouveau locataire"}</h3>
+    <div class="acik2">${kacis(evAd(bul("evler", k.ev) || {}))}</div>
+    <label>Civilité</label><select id="kCiv">${secim(CIVLER, k.civ)}</select>
+    <div class="iki"><div><label>Nom</label><input id="kNom" value="${kacis(k.nom)}" placeholder="ex. SCORICI"></div>
+    <div><label>Prénom</label><input id="kPrenom" value="${kacis(k.prenom)}" placeholder="ex. Mihaela"></div></div>
+    <div class="iki"><div><label>Date de naissance</label><input id="kDogum" type="date" value="${k.naissance||""}"></div>
+    <div><label>Date d'entrée</label><input id="kGiris" type="date" value="${k.entree||""}"></div></div>
+    <label>Date de départ (si le locataire est parti)</label><input id="kCikis" type="date" value="${k.sortie||""}">
+    <div class="acik2" style="margin-top:4px">Un locataire parti reste dans l'historique ; ses anciens documents restent disponibles.</div>
+    ${dugmeler(id && !odemeVar ? `kiraciSil('${id}')` : "")}`,
+  () => {
+    if (!deger("kNom")) return hata("Indiquez le nom.");
+    const alan = { civ:al("kCiv").value, nom:deger("kNom"), prenom:deger("kPrenom"), naissance:al("kDogum").value, entree:al("kGiris").value, sortie:al("kCikis").value, t:Date.now() };
+    if (id) Object.assign(k, alan); else veri.kiracilar.push({ id:yeniId(), ev:eid, ...alan });
+    kapat(); degisti();
+  });
+}
+function kiraciSil(id){ if (!confirm("Supprimer ce locataire ?")) return; Object.assign(bul("kiracilar", id), { sil:true, t:Date.now() }); kapat(); degisti(); }
+
+// ---------------- Paiement ----------------
+function ayTik(kid, ym){
+  const od = ayOdemeleri(kid, ym);
+  if (od.length === 1) return odemeAc(od[0].id);
+  if (od.length > 1) { const d = ayDurum(bul("kiracilar", kid), ym); if (d.tip === "odendi") return odemeAc(od[od.length-1].id); }
+  odemeAc(null, kid, ym);
+}
+function siradakiAy(kid){   // ilk odenmemis ay (giristen itibaren), yoksa bu ay
+  const k = bul("kiracilar", kid); if (!k) return buAy();
+  let ym = (k.entree || bugun()).slice(0,7);
+  for (let i = 0; i < 240; i++) {
+    const d = ayDurum(k, ym);
+    if (d.tip !== "odendi") return ym;
+    const [y,m] = ym.split("-").map(Number); ym = m === 12 ? `${y+1}-01` : `${y}-${String(m+1).padStart(2,"0")}`;
+  }
+  return buAy();
+}
+function odemeAc(id, kid, ym){
+  const o = id ? bul("odemeler", id) : null;
+  const aktif = canli(veri.kiracilar).filter(k => !k.sortie || (o && k.id === o.kiraci) || k.id === kid);
+  if (!aktif.length) { alert("Ajoutez d'abord un logement et un locataire (en bas de la page)."); return; }
+  kid = o ? o.kiraci : (kid || aktif[0].id);
+  pencereAc(`<h3>${o ? "Paiement " + kacis(o.no) : "Loyer reçu"}</h3>
+    <label>Locataire</label><select id="pKiraci" onchange="odemeDoldur(true)">${aktif.map(k => { const e = bul("evler", k.ev); return `<option value="${k.id}" ${k.id===kid?"selected":""}>${kacis(kisiAd(k))} — ${kacis(e ? (e.detay||e.adres) : "")}</option>`; }).join("")}</select>
+    <label>Mois payé</label><input id="pDonem" type="month" value="${o ? o.donem : (ym || siradakiAy(kid))}" onchange="odemeDoldur(false)">
+    <div class="iki"><div><label>Loyer hors charges</label><input id="pLoyer" inputmode="decimal" oninput="odemeKontrol()"></div>
+    <div><label>Charges</label><input id="pCharges" inputmode="decimal" oninput="odemeKontrol()"></div></div>
+    <label>Montant reçu (€)</label><input id="pTutar" inputmode="decimal" style="font-size:20px;font-weight:700" oninput="odemeKontrol()">
+    <div class="iki"><div><label>Date du paiement</label><input id="pTarih" type="date" value="${o ? o.tarih : bugun()}"></div>
+    <div><label>Mode</label><select id="pMod">${secim(MODLAR, o ? o.mod : "Espèces")}</select></div></div>
+    <div id="pBilgi" class="bilgiKutu"></div>
+    <div class="hata" id="fHata"></div>
+    <div class="dugmeler">
+      ${o ? `<button class="btn sil" onclick="odemeSil('${o.id}')">Supprimer</button>` : ""}
+      <button class="btn ince" onclick="kapat()">Annuler</button>
+      <button class="btn ince" onclick="odemeKaydet('${o?o.id:""}', false)">Enregistrer</button>
+      <button class="btn mavi" onclick="odemeKaydet('${o?o.id:""}', true)">Enregistrer + PDF</button>
+    </div>`, null);
+  if (o) { al("pLoyer").value = sayiYaz(o.loyer); al("pCharges").value = sayiYaz(o.charges); al("pTutar").value = sayiYaz(o.tutar); odemeKontrol(); }
+  else odemeDoldur(false);
+}
+function odemeDoldur(ayDegis){
+  const kid = al("pKiraci").value;
+  if (ayDegis) al("pDonem").value = siradakiAy(kid);
+  const k = bul("kiracilar", kid), e = bul("evler", k.ev);
+  const onceki = ayOdemeleri(kid, al("pDonem").value);
+  const odenen = onceki.reduce((a,o) => a + o.tutar, 0);
+  al("pLoyer").value = sayiYaz(+e.loyer || 0);
+  al("pCharges").value = sayiYaz(+e.charges || 0);
+  al("pTutar").value = sayiYaz(Math.max(0, (+e.loyer||0) + (+e.charges||0) - odenen));
+  odemeKontrol();
+}
+function odemeKontrol(){
+  const loyer = sayiOku(al("pLoyer").value), charges = sayiOku(al("pCharges").value || "0"), tutar = sayiOku(al("pTutar").value);
+  const b = al("pBilgi");
+  if (isNaN(tutar) || isNaN(loyer)) { b.className = "bilgiKutu"; b.textContent = ""; return; }
+  if (tutar < loyer + charges - 0.005) { b.className = "bilgiKutu sar"; b.innerHTML = `Paiement partiel : il manque <b>${para(loyer + charges - tutar)}</b>.<br>Le document sera un <b>reçu</b> (une quittance n'est délivrée que pour un paiement complet).`; }
+  else { b.className = "bilgiKutu"; b.innerHTML = `Paiement complet → <b>${veri.ayar.model === "attestation" ? "attestation de loyer" : "quittance de loyer"}</b>.`; }
+}
+function snapAl(k){
+  const e = bul("evler", k.ev), s = bul("sirketler", e.sirket);
+  return {
+    sirket: { ad:s.ad, tur:s.tur, adres:s.adres, lieu:s.lieu, siret:s.siret, gerant:s.gerant },
+    ev: { adres:e.adres, detay:e.detay },
+    kiraci: { civ:k.civ, nom:k.nom, prenom:k.prenom, naissance:k.naissance },
+  };
+}
+function yeniNo(sirketId, tarih){   // sirket + yil basina sira no
+  const y = tarih.slice(0,4);
+  const n = canli(veri.odemeler).filter(o => o.sirket === sirketId && o.no.startsWith(y + "-")).map(o => +o.no.slice(5) || 0);
+  return `${y}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3,"0")}`;
+}
+function odemeKaydet(id, pdf){
+  const kid = al("pKiraci").value, donem = al("pDonem").value, tarih = al("pTarih").value;
+  const loyer = sayiOku(al("pLoyer").value), charges = sayiOku(al("pCharges").value || "0"), tutar = sayiOku(al("pTutar").value);
+  if (!/^\d{4}-\d{2}$/.test(donem)) return hata("Choisissez le mois payé.");
+  if (isNaN(loyer) || loyer < 0 || isNaN(charges) || charges < 0) return hata("Loyer ou charges invalides.");
+  if (!(tutar > 0)) return hata("Indiquez le montant reçu.");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tarih)) return hata("Choisissez la date du paiement.");
+  const k = bul("kiracilar", kid), e = bul("evler", k.ev);
+  const alan = { kiraci:kid, ev:e.id, sirket:e.sirket, donem, loyer, charges, tutar, tarih, mod:al("pMod").value, snap:snapAl(k), t:Date.now() };
+  let o;
+  if (id) { o = bul("odemeler", id); if (o.sirket !== alan.sirket) alan.no = yeniNo(alan.sirket, tarih); Object.assign(o, alan); }
+  else { o = { id:yeniId(), no:yeniNo(e.sirket, tarih), ...alan }; veri.odemeler.push(o); }
+  kapat(); degisti();
+  if (pdf) pdfUret(o.id);
+}
+function odemeSil(id){
+  if (!confirm("Supprimer ce paiement ? Son document ne pourra plus être recréé.")) return;
+  Object.assign(bul("odemeler", id), { sil:true, t:Date.now() }); kapat(); degisti();
+}
+
+// ============================================================================
+//  MONTANT EN LETTRES (francais)
+// ============================================================================
+const U = ["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"];
+const D = ["","","vingt","trente","quarante","cinquante","soixante"];
+function alti100(n){
+  if (n < 20) return U[n];
+  const d = Math.floor(n/10), u = n % 10;
+  if (d < 7) return D[d] + (u === 1 ? " et un" : u ? "-" + U[u] : "");
+  if (d === 7) return "soixante" + (u === 1 ? " et onze" : "-" + U[10+u]);
+  if (d === 8) return u ? "quatre-vingt-" + U[u] : "quatre-vingts";
+  return "quatre-vingt-" + U[10+u];
+}
+function alti1000(n){
+  const c = Math.floor(n/100), r = n % 100; let s = "";
+  if (c) s = (c > 1 ? U[c] + " cent" : "cent") + (r === 0 && c > 1 ? "s" : "");
+  if (r) s += (s ? " " : "") + alti100(r);
+  return s;
+}
+function lettres(n){
+  if (n === 0) return "zéro";
+  const m = Math.floor(n/1e6), k = Math.floor(n % 1e6 / 1000), r = n % 1000, p = [];
+  if (m) p.push(alti1000(m) + (m > 1 ? " millions" : " million"));
+  if (k) p.push(k === 1 ? "mille" : alti1000(k).replace(/(cent|vingt)s$/, "$1") + " mille");
+  if (r) p.push(alti1000(r));
+  return p.join(" ");
+}
+function euroLettres(x){
+  const e = Math.floor(x + 1e-9), c = Math.round((x - e) * 100);
+  let s = lettres(e) + (e > 1 ? " euros" : " euro");
+  if (c) s += " et " + lettres(c) + (c > 1 ? " centimes" : " centime");
+  return s;
+}
+
+// ============================================================================
+//  PDF  (jsPDF — Helvetica, WinAnsi: Turkce/Rumence harfler sadelestirilir)
+// ============================================================================
+function P(s){
+  return String(s ?? "").replace(/[ıİ]/g, c => c === "ı" ? "i" : "I").replace(/[  ]/g, " ")
+    .replace(/[^\x00-\xFF]/g, c => c.normalize("NFD").replace(/[̀-ͯ]/g, "") || "?")
+    .replace(/[^\x00-\xFF]/g, "?");
+}
+const ilkGun = ym => `01/${ym.slice(5,7)}/${ym.slice(0,4)}`;
+const sonGun = ym => { const [y,m] = ym.split("-").map(Number); return `${new Date(y, m, 0).getDate()}/${ym.slice(5,7)}/${y}`; };
+const tarihUzun = s => { const [y,m,d] = s.split("-"); return `${+d === 1 ? "1er" : +d} ${AYLAR[+m-1]} ${y}`; };
+
+function pdfUret(id){
+  if (!window.jspdf) { alert("Le module PDF n'est pas chargé (connexion internet ?)."); return; }
+  const o = bul("odemeler", id), s = o.snap, model = veri.ayar.model;
+  const due = o.loyer + o.charges, kismi = o.tutar < due - 0.005;
+  const tip = kismi ? "recu" : model;
+  const doc = new jspdf.jsPDF({ unit:"mm", format:"a4" });
+  const W = 210, M = 22, IW = W - 2*M;
+  let y = 24;
+  const yaz = (t, x, opt) => doc.text(P(t), x, y, opt);
+  const paragraf = (t, size = 11) => {
+    doc.setFontSize(size);
+    const satir = doc.splitTextToSize(P(t), IW);
+    doc.text(satir, M, y, { lineHeightFactor:1.45 });
+    y += satir.length * size * 0.3528 * 1.45 + 3;
+  };
+
+  // en-tete societe
+  doc.setFont("helvetica","bold"); doc.setFontSize(17); yaz(s.sirket.ad, W/2, { align:"center" }); y += 6;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(90);
+  if (s.sirket.tur) { yaz(s.sirket.tur, W/2, { align:"center" }); y += 4.8; }
+  if (s.sirket.adres) { yaz("Adresse : " + s.sirket.adres, W/2, { align:"center" }); y += 4.8; }
+  if (s.sirket.siret) { yaz("SIRET : " + s.sirket.siret, W/2, { align:"center" }); y += 4.8; }
+  doc.setDrawColor(210); doc.line(M, y, W - M, y); y += 16;
+
+  // titre
+  doc.setTextColor(20); doc.setFont("helvetica","bold"); doc.setFontSize(19);
+  yaz(tip === "recu" ? "REÇU DE PAIEMENT PARTIEL" : tip === "attestation" ? "ATTESTATION DE LOYER" : "QUITTANCE DE LOYER", W/2, { align:"center" }); y += 7;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(110);
+  yaz(`N° ${o.no}  ·  Période : ${ayAdi(o.donem)}`, W/2, { align:"center" }); y += 14;
+  doc.setTextColor(20);
+
+  // texte
+  const imzalayan = s.sirket.gerant ? `Je soussigné(e) ${s.sirket.gerant}, représentant(e) légal(e)` : "Je soussigné, représentant légal";
+  const e = s.kiraci.civ === "Monsieur" ? "" : "e";   // accord : né / née, acquitté / acquittée
+  const kiraci = kisiAd(s.kiraci) + (veri.ayar.dogum && s.kiraci.naissance ? `, né${e} le ${tarihFr(s.kiraci.naissance)}` : "");
+  const konut = `${s.ev.adres}${s.ev.detay ? " (" + s.ev.detay + ")" : ""}`;
+  const tutarYazi = `${sayiYaz(o.tutar)} Euros (${euroLettres(o.tutar)})`;
+  doc.setFont("helvetica","normal");
+  if (tip === "attestation") {
+    paragraf(`${imzalayan} de la société ${s.sirket.ad}, propriétaire du logement désigné ci-dessous, atteste par la présente que :`);
+    y += 2;
+    paragraf(`${kiraci}, locataire du logement situé au ${konut}, s'est acquitté${e} du paiement de son loyer pour le mois de ${ayAdi(o.donem)}.`);
+  } else if (tip === "quittance") {
+    paragraf(`${imzalayan} de la société ${s.sirket.ad}, bailleur du logement situé au ${konut}, déclare avoir reçu de ${kiraci}, locataire, la somme de ${tutarYazi} au titre du paiement du loyer et des charges pour la période du ${ilkGun(o.donem)} au ${sonGun(o.donem)}, et lui en donne quittance, sous réserve de tous mes droits.`);
+  } else {
+    paragraf(`${imzalayan} de la société ${s.sirket.ad}, bailleur du logement situé au ${konut}, déclare avoir reçu de ${kiraci}, locataire, la somme de ${tutarYazi} à titre de paiement partiel du loyer et des charges pour la période du ${ilkGun(o.donem)} au ${sonGun(o.donem)}.`);
+  }
+  y += 6;
+
+  // tableau des montants
+  const satirlar = tip === "attestation"
+    ? [["Montant perçu", tutarYazi], ["Mode de règlement", o.mod], ["Période concernée", ayAdi(o.donem).replace(/^./, c => c.toUpperCase())], ["Date du paiement", tarihFr(o.tarih)]]
+    : [["Loyer hors charges", sayiYaz(o.loyer) + " Euros"], ["Provision pour charges", sayiYaz(o.charges) + " Euros"],
+       ["Total dû pour la période", sayiYaz(due) + " Euros"], ["Montant reçu", sayiYaz(o.tutar) + " Euros"],
+       ...(tip === "recu" ? [["Reste dû", sayiYaz(due - o.tutar) + " Euros"]] : []),
+       ["Mode de règlement", o.mod], ["Date du paiement", tarihFr(o.tarih)]];
+  doc.setFontSize(11);
+  const kutuY = y - 5;
+  for (const [a, b] of satirlar) {
+    const vurgu = /^(Montant reçu|Montant perçu|Reste dû)$/.test(a);
+    doc.setFont("helvetica", vurgu ? "bold" : "normal");
+    yaz(a + " :", M + 4);
+    const v = doc.splitTextToSize(P(b), IW - 70);
+    doc.text(v, M + 66, y);
+    y += 7 * v.length;
+  }
+  doc.setDrawColor(200); doc.roundedRect(M, kutuY, IW, y - kutuY - 2, 2, 2);
+  y += 8;
+
+  // mentions
+  doc.setFont("helvetica","normal"); doc.setTextColor(80);
+  if (tip === "quittance") paragraf("Cette quittance annule tous les reçus qui auraient pu être établis précédemment en cas de paiement partiel du montant du présent terme. Elle est délivrée gratuitement, conformément à l'article 21 de la loi n° 89-462 du 6 juillet 1989.", 9.5);
+  else if (tip === "recu") paragraf("Le présent reçu ne vaut pas quittance. Une quittance sera délivrée après paiement intégral du terme.", 9.5);
+  else paragraf(`Cette attestation est délivrée à la demande de l'intéressé${e} pour servir et faire valoir ce que de droit.`, 9.5);
+  doc.setTextColor(20);
+
+  // fait a / signature
+  y = Math.max(y + 8, 205);
+  doc.setFontSize(11);
+  yaz(`Fait à ${s.sirket.lieu || "Oudon"}, le ${tarihUzun(o.tarih)}`, W - M, { align:"right" }); y += 6;
+  yaz(`Le Bailleur (${s.sirket.ad})`, W - M, { align:"right" }); y += 6;
+  const imza = (bul("sirketler", o.sirket) || {}).imza;
+  if (imza) {
+    const h = 28, w = Math.min(70, h * imza.w / imza.h);
+    doc.addImage(imza.d, "PNG", W - M - w, y, w, h); y += h + 4;
+  } else {
+    doc.setFontSize(9); doc.setTextColor(140); y += 22; yaz("Signature et cachet", W - M, { align:"right" });
+  }
+
+  // pied de page
+  doc.setFontSize(8); doc.setTextColor(150);
+  doc.text(P(`${s.sirket.ad} · ${tip === "recu" ? "Reçu" : tip === "attestation" ? "Attestation" : "Quittance"} n° ${o.no}`), W/2, 287, { align:"center" });
+
+  const ad = `${tip === "recu" ? "Recu" : tip === "attestation" ? "Attestation" : "Quittance"}_${o.donem}_${s.kiraci.nom}_${s.kiraci.prenom}`.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w-]+/g,"_");
+  doc.save(ad + ".pdf");
+}
+
+// ============================================================================
+//  EXPORT / SAUVEGARDE
+// ============================================================================
+function indir(ad, icerik, tip){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([icerik], { type: tip }));
+  a.download = ad; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function csvIndir(){
+  const q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const sat = [["N°","Société","Locataire","Logement","Période","Loyer","Charges","Montant reçu","Mode","Date paiement"].map(q).join(";")];
+  for (const o of canli(veri.odemeler).sort((a,b) => (a.donem+a.no).localeCompare(b.donem+b.no)))
+    sat.push([o.no, o.snap.sirket.ad, kisiAd(o.snap.kiraci), evAd(o.snap.ev), o.donem, sayiYaz(o.loyer), sayiYaz(o.charges), sayiYaz(o.tutar), o.mod, tarihFr(o.tarih)].map(q).join(";"));
+  indir(`loyers_${bugun()}.csv`, "﻿" + sat.join("\r\n"), "text/csv;charset=utf-8");
+}
+function yedekIndir(){ indir(`loyers_sauvegarde_${bugun()}.json`, JSON.stringify(veri), "application/json"); }
+function yedekYukle(inp){
+  const f = inp.files[0]; if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t);
+    if (!d || !Array.isArray(d.odemeler)) throw 0;
+    if (!confirm(`Restaurer ${canli(d.odemeler).length} paiements ? Les données actuelles seront remplacées.`)) return;
+    const an = Date.now();
+    for (const ad of LISTELER) {
+      const ids = new Set((d[ad] || []).map(x => x.id));
+      d[ad] = (d[ad] || []).map(x => ({ ...x, t: Math.max(x.t || 0, an) }));
+      for (const x of veri[ad]) if (!ids.has(x.id) && !x.sil) d[ad].push({ ...x, sil:true, t:an });
+    }
+    d.ayar = { ...(d.ayar || {}), t: an };
+    veri = d; degisti();
+  }).catch(() => alert("Fichier de sauvegarde invalide.")).finally(() => inp.value = "");
+}
+
+// ============================================================================
+//  SENKRONIZASYON  (Cloudflare worker -> loyers.json, meme PIN que la caisse)
+// ============================================================================
+const LISTELER = ["sirketler","evler","kiracilar","odemeler"];
+let zamanlayici = null, senkronda = false, tekrar = false;
+function bekliyorMu(){ try { return localStorage.getItem(LS_BEKLE) === "1"; } catch(e){ return false; } }
+function bekliyor(v){ try { v ? localStorage.setItem(LS_BEKLE,"1") : localStorage.removeItem(LS_BEKLE); } catch(e){} }
+function pinAl(){ try { return localStorage.getItem(LS_PIN) || ""; } catch(e){ return ""; } }
+function durum(tip, yazi){ document.getElementById("nokta").className = "nokta " + tip; document.getElementById("durumYazi").textContent = yazi; }
+function saat(){ return new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
+
+function birlestir(a, b){
+  const out = { v:1 };
+  for (const ad of LISTELER) {
+    const m = new Map();
+    for (const x of [...(a[ad]||[]), ...(b[ad]||[])]) { const o = m.get(x.id); if (!o || (x.t||0) > (o.t||0)) m.set(x.id, x); }
+    out[ad] = [...m.values()];
+  }
+  out.ayar = ((b.ayar && b.ayar.t) || 0) > ((a.ayar && a.ayar.t) || 0) ? b.ayar : (a.ayar || b.ayar || { model:"quittance", dogum:false });
+  return out;
+}
+const imza = d => JSON.stringify([ (d.ayar && d.ayar.t) || 0, ...LISTELER.map(ad => (d[ad]||[]).map(x => x.id + ":" + (x.t||0)).sort()) ]);
+
+async function uzakOku(){
+  const r = await fetch(WORKER_URL + "&t=" + Date.now(), { cache:"no-store", headers:{ "X-Pin": pinAl() } });
+  if (r.status === 401) { const e = new Error("pin"); e.pin = true; throw e; }
+  if (r.status === 404) { const e = new Error("worker"); e.worker = true; throw e; }
+  if (!r.ok) throw new Error("lecture " + r.status);
+  const d = await r.json();
+  return (d && Array.isArray(d.odemeler)) ? d : null;
+}
+async function uzakYaz(d){
+  const r = await fetch(WORKER_URL, { method:"POST", headers:{ "Content-Type":"application/json", "X-Pin": pinAl() }, body: JSON.stringify(d) });
+  if (r.status === 401) { const e = new Error("pin"); e.pin = true; throw e; }
+  if (!r.ok) throw new Error("ecriture " + r.status);
+}
+async function senkron(){
+  if (!pinAl()) { pinSor(); return; }
+  if (senkronda) { tekrar = true; return; }
+  senkronda = true; durum("bekle", "Synchronisation…");
+  try {
+    const uzak = await uzakOku();
+    if (uzak) {
+      // cloud dolu: ilk acilista bu cihazin ornek sirketleri cloud'dakilerle cakismasin
+      if (!bekliyorMu() && !localStorage.getItem(LS_VERI + "Senk")) veri = uzak;
+      else veri = birlestir(veri, uzak);
+    }
+    if (!uzak || imza(veri) !== imza(uzak)) await uzakYaz(veri);
+    try { localStorage.setItem(LS_VERI + "Senk", "1"); } catch(e){}
+    kaydetYerel(); bekliyor(false);
+    durum("ok", "Synchronisé · " + saat()); ciz();
+  } catch (e) {
+    if (e.pin) { try { localStorage.removeItem(LS_PIN); } catch(_){} pinSor("PIN incorrect"); durum("hata", "PIN requis"); }
+    else if (e.worker) durum("hata", "Cloud pas encore activé · données de cet appareil");
+    else durum("hata", bekliyorMu() ? "Hors ligne · modifications en attente sur cet appareil" : "Pas de connexion · données de cet appareil affichées");
+  } finally { senkronda = false; if (tekrar) { tekrar = false; senkron(); } }
+}
+setInterval(() => { if (bekliyorMu() && !senkronda) senkron(); }, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) senkron(); });
+window.addEventListener("online", senkron);
+
+function pinSor(h){
+  document.getElementById("pinHata").textContent = h || "";
+  document.getElementById("pinPerde").classList.add("acik");
+  setTimeout(() => document.getElementById("pinGiris").focus(), 50);
+}
+function pinGonder(){
+  const p = document.getElementById("pinGiris").value.trim(); if (!p) return;
+  try { localStorage.setItem(LS_PIN, p); } catch(e){}
+  document.getElementById("pinGiris").value = ""; document.getElementById("pinPerde").classList.remove("acik");
+  senkron();
+}
+function pinUnut(){
+  if (!confirm("Supprimer le PIN sur cet appareil ? Il faudra le saisir à nouveau.")) return;
+  try { localStorage.removeItem(LS_PIN); } catch(e){} pinSor();
+}
+
+ciz();
+durum("", "Connexion…");
+senkron();
+</script>
+</body>
+</html>
